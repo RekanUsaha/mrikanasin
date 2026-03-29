@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MrIkanAsin — Upload & Arsip</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+<style>
+  :root {
+    --md-primary: #1A73E8; --md-primary-hover: #1557B0; --md-primary-light: #E8F0FE;
+    --md-secondary: #188038; --md-error: #D93025; --md-surface: #FFFFFF;
+    --md-surface-2: #F8F9FA; --md-surface-3: #F1F3F4; --md-on-surface: #202124;
+    --md-on-surface-variant: #5F6368; --md-outline: #DADCE0;
+    --md-radius-sm: 8px; --md-radius-md: 12px; --md-radius-full: 100px;
+    --font-main: 'Google Sans', 'Roboto', sans-serif;
+  }
+  
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-main); background: var(--md-surface-2); color: var(--md-on-surface); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+  .g-blue { color: var(--md-primary) !important; }
+
+  #splash { position: fixed; inset: 0; z-index: 9999; background: var(--md-surface); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #splash.hidden { display: none; }
+  .splash-logo { display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+  .splash-logo .material-symbols-outlined { font-size: 64px; }
+  .splash-title { font-size: 28px; font-weight: 700; color: var(--md-on-surface); margin-bottom: 4px; letter-spacing: -0.5px; }
+  .splash-sub { font-size: 14px; color: var(--md-on-surface-variant); margin-bottom: 32px; }
+  .login-card { width: calc(100% - 40px); max-width: 360px; background: var(--md-surface); border: 1px solid var(--md-outline); border-radius: var(--md-radius-md); padding: 24px; }
+  .login-card h2 { font-size: 18px; font-weight: 500; margin-bottom: 20px; text-align: center; }
+  .field-wrap { margin-bottom: 16px; }
+  .field { width: 100%; padding: 12px 14px; border-radius: var(--md-radius-sm); border: 1px solid var(--md-outline); background: var(--md-surface); font-family: var(--font-main); font-size: 15px; color: var(--md-on-surface); outline: none; transition: border 0.2s; }
+  .field:focus { border: 2px solid var(--md-primary); padding: 11px 13px; }
+  .btn-primary { width: 100%; padding: 12px; border: none; cursor: pointer; background: var(--md-primary); color: #fff; border-radius: var(--md-radius-full); font-family: var(--font-main); font-size: 14px; font-weight: 500; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-primary:hover { background: var(--md-primary-hover); }
+  .btn-primary:disabled { background: var(--md-surface-3); color: var(--md-outline); cursor: not-allowed; }
+  .demo-hint { color: var(--md-on-surface-variant); font-size: 12px; text-align: center; margin-top: 16px; }
+
+  #app { display: none; flex-direction: column; min-height: 100vh; }
+  #app.visible { display: flex; }
+
+  .top-bar { position: sticky; top: 0; z-index: 100; background: var(--md-surface); border-bottom: 1px solid var(--md-outline); padding: 0 16px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+  .top-bar-left { display: flex; align-items: center; gap: 10px; }
+  .top-bar-title { font-size: 18px; font-weight: 500; color: var(--md-on-surface); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--md-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; text-transform: uppercase; }
+  .icon-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--md-on-surface-variant); }
+  
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: var(--md-surface); border-top: 1px solid var(--md-outline); display: flex; height: 64px; }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: none; background: none; color: var(--md-on-surface-variant); }
+  .nav-indicator { width: 64px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+  .nav-item .label { font-size: 12px; font-weight: 500; }
+  .nav-item.active { color: var(--md-on-surface); }
+  .nav-item.active .nav-indicator { background: var(--md-primary-light); color: var(--md-on-surface); }
+
+  .content { flex: 1; padding: 16px 16px 88px; max-width: 600px; margin: 0 auto; width: 100%; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .section-header { margin-bottom: 16px; padding: 8px 0; display: flex; align-items: center; gap: 8px; }
+  .section-header h2 { font-size: 22px; font-weight: 400; color: var(--md-on-surface); }
+  
+  .card { background: var(--md-surface); border-radius: var(--md-radius-md); padding: 16px; margin-bottom: 16px; border: 1px solid var(--md-outline); }
+  .card-title { font-size: 14px; font-weight: 500; color: var(--md-on-surface); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .field-label { font-size: 12px; font-weight: 500; color: var(--md-on-surface-variant); margin-bottom: 6px; display: block; }
+  .field-required { color: var(--md-error); }
+  textarea.field { resize: vertical; min-height: 80px; }
+
+  .chips-wrap { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--md-outline); background: var(--md-surface); font-size: 14px; cursor: pointer; color: var(--md-on-surface-variant); display: flex; align-items: center; gap: 6px; }
+  .chip.selected { background: var(--md-primary-light); border-color: var(--md-primary-light); color: var(--md-primary); font-weight: 500; }
+
+  .location-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .location-btn { padding: 10px; border: 1px solid var(--md-outline); border-radius: var(--md-radius-sm); background: var(--md-surface); cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: var(--font-main); font-size: 14px; color: var(--md-primary); font-weight: 500; }
+  
+  .upload-zone { border: 1px dashed var(--md-outline); border-radius: var(--md-radius-sm); padding: 24px 16px; text-align: center; cursor: pointer; background: var(--md-surface-2); position: relative; }
+  .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-zone .material-symbols-outlined { font-size: 32px; color: var(--md-on-surface-variant); margin-bottom: 8px; display: block; }
+  .upload-zone p { font-size: 14px; color: var(--md-on-surface-variant); }
+  .photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+  .photo-thumb { aspect-ratio: 1; border-radius: var(--md-radius-sm); overflow: hidden; position: relative; border: 1px solid var(--md-outline); }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .remove-btn { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border-radius: 50%; background: rgba(0,0,0,0.5); border: none; cursor: pointer; color: #fff; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+
+  .search-bar { background: var(--md-surface-2); border-radius: var(--md-radius-full); display: flex; align-items: center; padding: 4px 16px; margin-bottom: 12px; }
+  .search-bar input { flex: 1; border: none; background: none; outline: none; padding: 10px 8px; font-size: 15px; font-family: var(--font-main); }
+  .search-clear { background: none; border: none; color: var(--md-on-surface-variant); cursor: pointer; display: none; }
+  .search-clear.visible { display: block; }
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chip { padding: 6px 16px; border-radius: var(--md-radius-sm); border: 1px solid var(--md-outline); background: var(--md-surface); font-size: 13px; cursor: pointer; white-space: nowrap; color: var(--md-on-surface-variant); }
+  .filter-chip.active { background: var(--md-primary-light); color: var(--md-primary); border-color: var(--md-primary-light); font-weight: 500; }
+
+  .archive-card { background: var(--md-surface); border-radius: var(--md-radius-md); padding: 16px; margin-bottom: 12px; border: 1px solid var(--md-outline); cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 12px; }
+  .archive-order { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .archive-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: var(--md-surface-2); color: var(--md-on-surface-variant); border: 1px solid var(--md-outline); text-transform: uppercase; }
+  .archive-name { font-size: 14px; color: var(--md-on-surface); margin-bottom: 4px; }
+  .archive-addr { font-size: 13px; color: var(--md-on-surface-variant); }
+  .archive-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; }
+  .archive-time { font-size: 12px; color: var(--md-on-surface-variant); text-align: right; }
+  .btn-confirm { padding: 6px 12px; border-radius: var(--md-radius-full); border: 1px solid var(--md-outline); background: var(--md-surface); color: var(--md-primary); font-size: 13px; font-weight: 500; cursor: pointer; }
+
+  #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #323232; color: #fff; padding: 12px 24px; border-radius: 4px; font-size: 14px; z-index: 9998; display: none; align-items: center; gap: 8px; }
+  #toast.show { display: flex; }
+
+  .modal-overlay { position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.5); display: none; align-items: flex-end; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet { background: var(--md-surface); border-radius: 16px 16px 0 0; padding: 24px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-size: 20px; font-weight: 400; margin-bottom: 16px; }
+  .detail-row { display: flex; padding: 8px 0; border-bottom: 1px solid var(--md-surface-2); font-size: 14px; }
+  .detail-label { color: var(--md-on-surface-variant); min-width: 100px; }
+  
+  /* Loading Overlay */
+  #loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.8); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+  #loading-overlay.visible { display: flex; }
+  .spinner { border: 4px solid var(--md-surface-3); border-top: 4px solid var(--md-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 16px; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <p style="font-weight: 500; color: var(--md-on-surface);" id="loading-text">Memproses...</p>
+</div>
+
+<div id="splash">
+  <div class="splash-logo"><span class="material-symbols-outlined g-blue">set_meal</span></div>
+  <div class="splash-title">MrIkanAsin</div>
+  <div class="splash-sub">Sistem Manajemen Pengiriman</div>
+  <div class="login-card">
+    <h2>Login Akun</h2>
+    <div class="field-wrap">
+      <input type="email" class="field" id="login-user" placeholder="Email Firebase" autocomplete="username">
+    </div>
+    <div class="field-wrap">
+      <input type="password" class="field" id="login-pass" placeholder="Password" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" onclick="window.doLogin()">Masuk</button>
+    <p class="demo-hint">Gunakan email & password yang terdaftar di Firebase Auth</p>
+  </div>
+</div>
+
+<div id="app">
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <span class="material-symbols-outlined g-blue">set_meal</span>
+      <span class="top-bar-title">MrIkanAsin</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="avatar" id="user-avatar">U</div>
+      <button class="icon-btn" onclick="window.doLogout()" title="Keluar"><span class="material-symbols-outlined">logout</span></button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page active" id="page-upload">
+      <div class="section-header">
+        <h2>Upload Pesanan</h2>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="material-symbols-outlined">receipt_long</span> Info Pesanan</div>
+        <div class="field-wrap">
+          <label class="field-label">Nomor Pesanan <span class="field-required">*</span></label>
+          <input class="field" id="f-order-no" type="text" placeholder="Contoh: INV-20240329-001">
+        </div>
+        <div class="field-wrap" style="margin-bottom:0">
+          <label class="field-label">Jenis Pesanan <span class="field-required">*</span></label>
+          <div class="chips-wrap" id="type-chips">
+            <div class="chip" onclick="window.selectType(this,'food')">Food</div>
+            <div class="chip" onclick="window.selectType(this,'spx-instan')">SPX Instan</div>
+            <div class="chip" onclick="window.selectType(this,'spx-sameday')">SPX Sameday</div>
+            <div class="chip" onclick="window.selectType(this,'kirim-instan')">Kirim Instan</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="material-symbols-outlined">person</span> Data Penerima</div>
+        <div class="field-wrap">
+          <label class="field-label">Nama Penerima <span class="field-required">*</span></label>
+          <input class="field" id="f-name" type="text" placeholder="Nama lengkap">
+        </div>
+        <div class="field-wrap" style="margin-bottom:0">
+          <label class="field-label">Catatan (Opsional)</label>
+          <textarea class="field" id="f-note" placeholder="Tambahkan catatan..."></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="material-symbols-outlined">location_on</span> Alamat <span class="field-required">*</span></div>
+        <div class="location-wrap">
+          <button class="location-btn" id="loc-btn" onclick="window.getLocation()">
+            <span class="material-symbols-outlined">my_location</span>
+            <span id="loc-btn-text">Gunakan GPS Saat Ini</span>
+          </button>
+          <input class="field" id="f-address" type="text" placeholder="Atau ketik alamat lengkap...">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="material-symbols-outlined">screenshot</span> Bukti Screenshot</div>
+        <div class="upload-zone" id="zone-ss">
+          <input type="file" id="input-ss" accept="image/*" multiple onchange="window.handleFiles(event,'ss')">
+          <span class="material-symbols-outlined">image</span>
+          <p>Tap untuk unggah gambar</p>
+        </div>
+        <div class="photo-grid" id="grid-ss"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="material-symbols-outlined">photo_camera</span> Bukti Foto</div>
+        <div class="upload-zone" id="zone-photo">
+          <input type="file" id="input-photo" accept="image/*" multiple onchange="window.handleFiles(event,'photo')">
+          <span class="material-symbols-outlined">camera_alt</span>
+          <p>Tap untuk unggah foto</p>
+        </div>
+        <div class="photo-grid" id="grid-photo"></div>
+      </div>
+
+      <button class="btn-primary" id="btn-upload" onclick="window.doUpload()">Upload Pesanan</button>
+    </div>
+
+    <div class="page" id="page-archive">
+      <div class="section-header">
+        <h2>Arsip Pesanan</h2>
+      </div>
+
+      <div class="search-bar">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" id="search-input" placeholder="Cari nomor pesanan/nama..." oninput="window.onSearch()">
+        <button class="search-clear" id="search-clear" onclick="window.clearSearch()">
+          <span class="material-symbols-outlined" style="font-size:20px">close</span>
+        </button>
+      </div>
+
+      <div class="filter-bar" id="filter-chips">
+        <div class="filter-chip active" onclick="window.setTypeFilter(this,'all')">Semua</div>
+        <div class="filter-chip" onclick="window.setTypeFilter(this,'food')">Food</div>
+        <div class="filter-chip" onclick="window.setTypeFilter(this,'spx-instan')">SPX Instan</div>
+        <div class="filter-chip" onclick="window.setTypeFilter(this,'spx-sameday')">Sameday</div>
+        <div class="filter-chip" onclick="window.setTypeFilter(this,'kirim-instan')">Kirim Instan</div>
+      </div>
+
+      <div id="archive-results"></div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-upload" onclick="window.switchPage('upload')">
+      <div class="nav-indicator"><span class="material-symbols-outlined">upload_file</span></div>
+      <span class="label">Upload</span>
+    </button>
+    <button class="nav-item" id="nav-archive" onclick="window.switchPage('archive')">
+      <div class="nav-indicator"><span class="material-symbols-outlined">inventory_2</span></div>
+      <span class="label">Arsip</span>
+    </button>
+  </div>
+</div>
+
+<div id="toast"><span id="toast-msg">OK</span></div>
+
+<div class="modal-overlay" id="detail-modal" onclick="window.closeModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-title" id="modal-title">Detail</div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script type="module">
+  // 1. IMPORT FIREBASE SDK DARI CDN
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // 2. KONFIGURASI FIREBASE KAMU
+  const firebaseConfig = {
+    apiKey: "AIzaSyDeAIeJYabLqzX8_lwBkDZE98EOc3-9lYY",
+    authDomain: "arsipmrikanasin.firebaseapp.com",
+    projectId: "arsipmrikanasin",
+    storageBucket: "arsipmrikanasin.firebasestorage.app",
+    messagingSenderId: "789371282298",
+    appId: "1:789371282298:web:edc61d7bc00935fc22ecc3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // KONFIGURASI CLOUDINARY
+  const CLOUD_NAME = "dn2o2vf04";
+  const UPLOAD_PRESET = "ArsipSfd";
+  const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+
+  // STATE APLIKASI
+  let currentUser = '';
+  let selectedType = '';
+  let ssFiles = []; // Menyimpan base64 (terkompresi)
+  let photoFiles = []; // Menyimpan base64 (terkompresi)
+  let archiveData = [];
+  let filterTypeVal = 'all';
+
+  // --- FUNGSI UI LOADER ---
+  function showLoading(text) {
+    document.getElementById('loading-text').textContent = text;
+    document.getElementById('loading-overlay').classList.add('visible');
+  }
+  function hideLoading() {
+    document.getElementById('loading-overlay').classList.remove('visible');
+  }
+
+  // --- CEK STATUS LOGIN OTOMATIS ---
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user.email;
+      document.getElementById('user-avatar').textContent = currentUser[0].toUpperCase();
+      document.getElementById('splash').classList.add('hidden');
+      document.getElementById('app').classList.add('visible');
+      loadArchiveFirestore();
+    } else {
+      document.getElementById('app').classList.remove('visible');
+      document.getElementById('splash').classList.remove('hidden');
+    }
+  });
+
+  // --- LOGIN LOGIC ---
+  window.doLogin = async function() {
+    const email = document.getElementById('login-user').value.trim();
+    const p = document.getElementById('login-pass').value.trim();
+    if (!email || !p) { showToast('Isi email dan password'); return; }
+    
+    showLoading('Sedang Login...');
+    try {
+      await signInWithEmailAndPassword(auth, email, p);
+      showToast('Login Berhasil');
+    } catch (error) {
+      showToast('Login Gagal: ' + error.message);
+    } finally {
+      hideLoading();
+    }
+  }
+
+  window.doLogout = function() {
+    signOut(auth);
+    document.getElementById('login-user').value = '';
+    document.getElementById('login-pass').value = '';
+  }
+
+  // --- UI NAVIGATION ---
+  window.switchPage = function(p) {
+    document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
+    document.getElementById('page-' + p).classList.add('active');
+    document.getElementById('nav-' + p).classList.add('active');
+    if (p === 'archive') renderArchive();
+  }
+
+  window.selectType = function(el, type) {
+    document.querySelectorAll('#type-chips .chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedType = type;
+  }
+
+  window.getLocation = function() {
+    const txt = document.getElementById('loc-btn-text');
+    txt.textContent = 'Mencari lokasi...';
+    if (!navigator.geolocation) { txt.textContent = 'GPS tidak didukung'; return; }
+    navigator.geolocation.getCurrentPosition(pos => {
+      document.getElementById('f-address').value = `Lat ${pos.coords.latitude.toFixed(5)}, Lng ${pos.coords.longitude.toFixed(5)}`;
+      txt.textContent = 'Lokasi Ditemukan';
+    }, () => {
+      txt.textContent = 'Gagal Akses GPS';
+    });
+  }
+
+  // --- KOMPRESI DAN FILE HANDLING ---
+  function compressImageTo50KB(file, callback) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        let width = img.width; let height = img.height;
+        const maxDim = 800;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) { height = Math.round((height * maxDim) / width); width = maxDim; } 
+          else { width = Math.round((width * maxDim) / height); height = maxDim; }
+        }
+
+        canvas.width = width; canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+        let quality = 0.9;
+        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+        const getByteSize = (base64Str) => {
+          let padding = 0;
+          if (base64Str.endsWith('==')) padding = 2; else if (base64Str.endsWith('=')) padding = 1;
+          return ((base64Str.length - (base64Str.indexOf(',') + 1)) * 0.75) - padding;
+        };
+
+        const maxBytes = 50 * 1024;
+        while (getByteSize(dataUrl) > maxBytes && quality > 0.1) {
+          quality -= 0.1; dataUrl = canvas.toDataURL('image/jpeg', quality);
+        }
+        while (getByteSize(dataUrl) > maxBytes && width > 100) {
+          width *= 0.8; height *= 0.8;
+          canvas.width = width; canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          dataUrl = canvas.toDataURL('image/jpeg', quality);
+        }
+        callback(dataUrl);
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  window.handleFiles = function(e, type) {
+    const arr = type === 'ss' ? ssFiles : photoFiles;
+    const files = Array.from(e.target.files).slice(0, 7 - arr.length);
+    files.forEach(f => {
+      if (!f.type.startsWith('image/')) return;
+      showLoading('Mengkompres Gambar...');
+      compressImageTo50KB(f, (compressedUrl) => {
+        arr.push({ name: f.name, base64: compressedUrl });
+        renderGrid(type);
+        hideLoading();
+      });
+    });
+  }
+
+  window.removeFile = function(type, i) {
+    if (type === 'ss') ssFiles.splice(i, 1); else photoFiles.splice(i, 1);
+    renderGrid(type);
+  }
+
+  function renderGrid(type) {
+    const arr = type === 'ss' ? ssFiles : photoFiles;
+    document.getElementById('grid-' + type).innerHTML = arr.map((f, i) => `
+      <div class="photo-thumb">
+        <img src="${f.base64}" alt="">
+        <button class="remove-btn" onclick="window.removeFile('${type}',${i})"><span class="material-symbols-outlined" style="font-size:16px">close</span></button>
+      </div>`).join('');
+  }
+
+  // --- FUNGSI UPLOAD CLOUDINARY ---
+  async function uploadToCloudinary(base64Image) {
+    const formData = new FormData();
+    formData.append('file', base64Image);
+    formData.append('upload_preset', UPLOAD_PRESET);
+
+    const response = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
+    const data = await response.json();
+    return data.secure_url; 
+  }
+
+  // --- PROSES SIMPAN KE DATABASE ---
+  window.doUpload = async function() {
+    const no = document.getElementById('f-order-no').value.trim();
+    const nm = document.getElementById('f-name').value.trim();
+    const ad = document.getElementById('f-address').value.trim();
+    if (!no || !selectedType || !nm || !ad) { showToast('Lengkapi data wajib (*)'); return; }
+
+    showLoading('Mengunggah Foto ke Cloudinary...');
+    
+    try {
+      const uploadedSS = [];
+      for (const file of ssFiles) {
+        const url = await uploadToCloudinary(file.base64);
+        uploadedSS.push({ name: file.name, url: url });
+      }
+
+      const uploadedPhoto = [];
+      for (const file of photoFiles) {
+        const url = await uploadToCloudinary(file.base64);
+        uploadedPhoto.push({ name: file.name, url: url });
+      }
+
+      showLoading('Menyimpan Data ke Database...');
+
+      const newOrder = {
+        orderNo: no,
+        type: selectedType,
+        name: nm,
+        address: ad,
+        note: document.getElementById('f-note').value.trim(),
+        ssFiles: uploadedSS,       
+        photoFiles: uploadedPhoto, 
+        uploadedAt: new Date().toISOString(),
+        uploader: currentUser
+      };
+
+      const docRef = await addDoc(collection(db, "orders"), newOrder);
+      
+      archiveData.unshift({ id: docRef.id, ...newOrder });
+      
+      ['f-order-no','f-name','f-note','f-address'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('loc-btn-text').textContent = 'Gunakan GPS Saat Ini';
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+      document.getElementById('input-ss').value = '';
+      document.getElementById('input-photo').value = '';
+      
+      selectedType = ''; ssFiles = []; photoFiles = [];
+      renderGrid('ss'); renderGrid('photo');
+      
+      hideLoading();
+      showToast('Upload Pesanan Berhasil');
+      window.switchPage('archive');
+
+    } catch (error) {
+      hideLoading();
+      showToast('Gagal Upload: ' + error.message);
+      console.error(error);
+    }
+  }
+
+  // --- FUNGSI OPEN GOOGLE MAPS ---
+  window.openMapsById = function(e, id) {
+    if (e) e.stopPropagation(); // Mencegah modal terbuka saat klik alamat di kartu
+    const entry = archiveData.find(a => a.id === id);
+    if (entry && entry.address) {
+      // Bersihkan teks 'Lat' dan 'Lng' agar murni format koordinat atau teks jalan yang bersih
+      let query = entry.address.replace(/Lat\s/i, '').replace(/Lng\s/i, '');
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+      window.open(url, '_blank');
+    }
+  }
+
+  // --- LOAD ARSIP DARI FIRESTORE ---
+  async function loadArchiveFirestore() {
+    showLoading('Memuat Data Arsip...');
+    try {
+      const q = query(collection(db, "orders"), orderBy("uploadedAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      archiveData = [];
+      querySnapshot.forEach((doc) => {
+        archiveData.push({ id: doc.id, ...doc.data() });
+      });
+      renderArchive();
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+      showToast('Gagal memuat arsip');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  function renderArchive() {
+    const searchVal = document.getElementById('search-input').value.toLowerCase();
+    const results = document.getElementById('archive-results');
+    results.innerHTML = '';
+    
+    let filtered = archiveData.filter(e => 
+      (e.orderNo.toLowerCase().includes(searchVal) || e.name.toLowerCase().includes(searchVal)) &&
+      (filterTypeVal === 'all' || e.type === filterTypeVal)
+    );
+
+    if (!filtered.length) { results.innerHTML = '<p style="text-align:center; color:gray; padding: 20px;">Tidak ada data ditemukan.</p>'; return; }
+
+    filtered.forEach(entry => {
+      const el = document.createElement('div');
+      el.className = 'archive-card';
+      el.innerHTML = `
+        <div>
+          <div class="archive-order">${entry.orderNo}</div>
+          <div class="archive-meta"><span class="badge">${entry.type}</span></div>
+          <div class="archive-name">${entry.name}</div>
+          <div class="archive-addr" onclick="window.openMapsById(event, '${entry.id}')" style="cursor: pointer; color: var(--md-primary); text-decoration: underline;" title="Buka di Google Maps">${entry.address}</div>
+        </div>
+        <div class="archive-right">
+          <div class="archive-time">${new Date(entry.uploadedAt).toLocaleDateString('id-ID')}</div>
+          <button class="btn-confirm" onclick="window.viewPhotos(event, '${entry.id}')">Lihat Foto</button>
+        </div>`;
+      el.addEventListener('click', e => { if (!e.target.closest('.btn-confirm') && !e.target.closest('.archive-addr')) showDetail(entry); });
+      results.appendChild(el);
+    });
+  }
+
+  window.viewPhotos = function(e, id) {
+    e.stopPropagation();
+    const entry = archiveData.find(a => a.id === id);
+    if (entry) {
+      let ssLinks = entry.ssFiles && entry.ssFiles.length > 0 
+        ? entry.ssFiles.map((f, i) => `<a href="${f.url}" target="_blank" style="display:block; margin-bottom:6px; color:var(--md-primary); text-decoration:none; font-size:14px; word-break:break-all;">📄 Lihat Screenshot ${i+1}</a>`).join('')
+        : '<span style="color:var(--md-on-surface-variant); font-size:14px;">Tidak ada screenshot</span>';
+        
+      let photoLinks = entry.photoFiles && entry.photoFiles.length > 0 
+        ? entry.photoFiles.map((f, i) => `<a href="${f.url}" target="_blank" style="display:block; margin-bottom:6px; color:var(--md-primary); text-decoration:none; font-size:14px; word-break:break-all;">📸 Lihat Bukti Pengiriman ${i+1}</a>`).join('')
+        : '<span style="color:var(--md-on-surface-variant); font-size:14px;">Tidak ada bukti foto</span>';
+
+      document.getElementById('modal-title').textContent = 'Foto: ' + entry.orderNo;
+      document.getElementById('modal-body').innerHTML = `
+        <div style="margin-bottom: 16px;">
+          <strong style="display:block; margin-bottom: 8px; color:var(--md-on-surface); font-size:14px;">Bukti Screenshot (Cloudinary)</strong>
+          <div style="background: var(--md-surface-2); padding: 12px; border-radius: 8px; border: 1px solid var(--md-outline);">${ssLinks}</div>
+        </div>
+        <div>
+          <strong style="display:block; margin-bottom: 8px; color:var(--md-on-surface); font-size:14px;">Bukti Pengiriman (Cloudinary)</strong>
+          <div style="background: var(--md-surface-2); padding: 12px; border-radius: 8px; border: 1px solid var(--md-outline);">${photoLinks}</div>
+        </div>
+      `;
+      document.getElementById('detail-modal').classList.add('open');
+    }
+  }
+
+  // --- FUNGSI SEARCH, FILTER & TOAST ---
+  window.onSearch = function() {
+    const v = document.getElementById('search-input').value;
+    document.getElementById('search-clear').classList.toggle('visible', v.length > 0);
+    renderArchive();
+  }
+  window.clearSearch = function() { document.getElementById('search-input').value = ''; window.onSearch(); }
+  
+  window.setTypeFilter = function(el, type) {
+    document.querySelectorAll('#filter-chips .filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active'); filterTypeVal = type; renderArchive();
+  }
+
+  function showDetail(entry) {
+    document.getElementById('modal-title').textContent = entry.orderNo;
+    document.getElementById('modal-body').innerHTML = `
+      <div class="detail-row"><span class="detail-label">Penerima</span><span>${entry.name}</span></div>
+      <div class="detail-row"><span class="detail-label">Alamat</span><span onclick="window.openMapsById(event, '${entry.id}')" style="cursor: pointer; color: var(--md-primary); text-decoration: underline;" title="Buka di Google Maps">${entry.address}</span></div>
+      ${entry.note ? `<div class="detail-row"><span class="detail-label">Catatan</span><span>${entry.note}</span></div>` : ''}
+      <div class="detail-row"><span class="detail-label">Waktu</span><span>${new Date(entry.uploadedAt).toLocaleString('id-ID')}</span></div>
+      <div class="detail-row"><span class="detail-label">Admin</span><span>${entry.uploader}</span></div>
+    `;
+    document.getElementById('detail-modal').classList.add('open');
+  }
+
+  window.closeModal = function(e) { if (e.target.classList.contains('modal-overlay')) document.getElementById('detail-modal').classList.remove('open'); }
+
+  let _toastT;
+  function showToast(msg) {
+    document.getElementById('toast-msg').textContent = msg;
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    clearTimeout(_toastT);
+    _toastT = setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+</body>
+</html>
